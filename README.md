@@ -1,5 +1,9 @@
 # fortran-acc-audit
 
+[![CI](https://github.com/gonos2k/fortran-acc-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/gonos2k/fortran-acc-audit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+
 Static audit for OpenACC directive patterns in Fortran. Built for NWP and climate GPU porting efforts (WRF, CESM, MPAS, ICON, E3SM, IFS, KIM-meso, …) that share the column-sequential `!$acc routine seq` + `!$acc parallel loop gang vector_length(N)` idiom.
 
 Detects the **idle-lane-tax pattern** where a `routine seq` callee is reached from a `parallel loop` with `vector_length > 1`. In that configuration, NVHPC allocates full register footprint for all N lanes per gang but only 1 lane executes — the other N-1 are pure register tax, collapsing blocks/SM and crippling GPU occupancy. A 2-line `vector_length(128) → (1)` fix in the KIM-meso port produced a 32% wall-time reduction; this tool makes the pattern mechanically detectable on any similar codebase before it burns dev-days.

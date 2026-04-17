@@ -7,8 +7,6 @@ merge audit output into a larger graph (e.g. graphify-out/graph.json).
 from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from typing import Any
 
 
 SCHEMA_VERSION = "0.1.0"

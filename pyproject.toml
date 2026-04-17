@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm[toml]>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fortran-acc-audit"
+version = "0.1.0"
+description = "Static audit for OpenACC directive patterns in Fortran codebases (NWP/climate focus)"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "gonos2k" }]
+keywords = ["fortran", "openacc", "gpu", "hpc", "nwp", "climate", "wrf", "static-analysis"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Fortran",
+  "Topic :: Scientific/Engineering :: Atmospheric Science",
+  "Topic :: Software Development :: Quality Assurance",
+]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+fparser = ["fparser>=0.2"]
+dev = [
+  "pytest>=7",
+  "pytest-cov>=4",
+  "ruff>=0.5",
+]
+
+[project.scripts]
+fortran-acc-audit = "fortran_acc_audit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/gonos2k/fortran-acc-audit"
+Repository = "https://github.com/gonos2k/fortran-acc-audit"
+Issues = "https://github.com/gonos2k/fortran-acc-audit/issues"
+
+[tool.setuptools.packages.find]
+include = ["fortran_acc_audit*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

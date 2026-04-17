@@ -1,1 +1,61 @@
+  name: CI
 
+  on:
+    push:
+      branches: [main]
+    pull_request:
+      branches: [main]
+    workflow_dispatch:
+
+  permissions:
+    contents: read
+
+  jobs:
+    test:
+      name: Test (Python ${{ matrix.python-version }})
+      runs-on: ubuntu-latest
+      strategy:
+        fail-fast: false
+        matrix:
+          python-version: ["3.10", "3.11", "3.12"]
+
+      steps:
+        - uses: actions/checkout@v4
+
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v5
+          with:
+            python-version: ${{ matrix.python-version }}
+
+        - name: Install package + dev extras
+          run: |
+            python -m pip install --upgrade pip
+            pip install -e .[dev]
+
+        - name: Lint (ruff check)
+          run: ruff check fortran_acc_audit tests
+
+        - name: Run tests
+          run: pytest -v --tb=short
+
+        - name: Smoke-test CLI on fixtures
+          run: |
+            fortran-acc-audit --source-dir tests/fixtures \
+              --out-dir /tmp/audit_out \
+              --emit-graphify-layer /tmp/audit_out/graphify_layer.json
+            python -c "
+            import json
+            findings = json.load(open('/tmp/audit_out/audit_vl_seq_mismatch.json'))
+            assert len(findings) == 1, f'expected 1 violation, got {len(findings)}: {findings}'
+            print('OK — CLI smoke test passed')
+            "
+
+        - name: Verify --fail-on-violation exits nonzero
+          run: |
+            set +e
+            fortran-acc-audit --source-dir tests/fixtures \
+              --out-dir /tmp/audit_fail --fail-on-violation
+            rc=$?
+            set -e
+            test "$rc" -eq 1 || (echo "expected exit 1, got $rc" && exit 1)
+            echo "OK — fail-on-violation exits 1 as expected"
